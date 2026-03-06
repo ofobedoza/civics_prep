@@ -2,6 +2,9 @@ import streamlit as st
 import random
 import pandas as pd
 
+# Page title
+st.title("Civics Test Reviewer")
+
 # Load civics questions CSV
 CIVIC_QUESTIONS = pd.read_csv("civics_questions.csv").to_dict(orient="records")
 

@@ -2,64 +2,87 @@ import streamlit as st
 import random
 import pandas as pd
 
-# Page title
-st.title("Civics Test Reviewer")
+# ---------- Page config ----------
+st.set_page_config(page_title="US Civics Test Flashcards", layout="centered")
 
-# Load civics questions CSV
+# ---------- CSS Styling ----------
+st.markdown("""
+<style>
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.flashcard {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 16px 16px 0 0;
+    border: 1px solid #ddd;
+    font-size: 22px;
+    line-height: 1.5;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.answerbox {
+    background-color: #fff2b3;
+    padding: 20px;
+    border-radius: 0 0 16px 16px;
+    border: 1px solid #ffd966;
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.stButton button {
+    font-size: 22px;
+    height: 60px;
+    border-radius: 0 0 16px 16px;
+    border-top: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------- Title ----------
+st.title("US Civics Test Flashcards")
+
+# ---------- Load questions ----------
 CIVIC_QUESTIONS = pd.read_csv("civics_questions.csv").to_dict(orient="records")
 
-# Initialize session state
+# ---------- Session state ----------
 if "questions" not in st.session_state:
     st.session_state.questions = []
+
 if "current_index" not in st.session_state:
     st.session_state.current_index = 0
+
 if "show_answer" not in st.session_state:
     st.session_state.show_answer = False
 
-# Sidebar: number of questions
-num_questions = st.sidebar.selectbox("Number of questions", [10, 20, 30, 50, 100])
+if "num_questions" not in st.session_state:
+    st.session_state.num_questions = 20
+
+if "quiz_setup" not in st.session_state:
+    st.session_state.quiz_setup = True
+
+# ---------- Functions ----------
 def start_quiz():
-    n = min(num_questions, len(CIVIC_QUESTIONS))
+    num_q = st.session_state.get("num_questions", 20)
+    n = min(num_q, len(CIVIC_QUESTIONS))
     st.session_state.questions = random.sample(CIVIC_QUESTIONS, n)
     st.session_state.current_index = 0
     st.session_state.show_answer = False
-st.sidebar.button("Go", on_click=start_quiz)
+    st.session_state.quiz_setup = False
 
-# Stop if quiz not started
-if not st.session_state.questions:
-    st.write("Click 'Go' to start the quiz.")
-    st.stop()
-
-# Current question
-idx = st.session_state.current_index
-q = st.session_state.questions[idx]
-
-# Progress bar
-progress = (idx + 1) / len(st.session_state.questions)
-st.progress(progress)
-st.markdown(f"**Question {idx + 1} of {len(st.session_state.questions)}**")
-st.write(q["question"])
-
-# Show answer in highlighted box
-if st.session_state.show_answer:
-    st.markdown(
-        f"""
-        <div style="
-            background-color: #fff2b3;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ffd966;
-            margin-bottom: 10px;
-        ">
-        <strong>Answer:</strong> {q['answer']}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Button callbacks
-def show_answer():
-    st.session_state.show_answer = True
+def new_quiz():
+    st.session_state.quiz_setup = True
+    st.session_state.questions = []
+    st.session_state.show_answer = False
+    st.session_state.current_index = 0
 
 def next_question():
     if st.session_state.current_index < len(st.session_state.questions) - 1:
@@ -71,11 +94,54 @@ def previous_question():
         st.session_state.current_index -= 1
         st.session_state.show_answer = False
 
-# Three buttons: Previous, Show Answer, Next
-col1, col2, col3 = st.columns(3)
+def reveal_answer():
+    st.session_state.show_answer = not st.session_state.show_answer
+
+# ---------- Quiz setup screen ----------
+if st.session_state.quiz_setup:
+    st.subheader("Start a New Quiz")
+    st.selectbox(
+        "Number of questions",
+        [10, 20, 30, 50, 100],
+        key="num_questions"
+    )
+    st.button("Start Quiz", on_click=start_quiz)
+    st.stop()
+
+# ---------- Current question ----------
+idx = st.session_state.current_index
+q = st.session_state.questions[idx]
+
+# ---------- Progress ----------
+progress = (idx + 1) / len(st.session_state.questions)
+st.progress(progress)
+st.caption(f"Question {idx + 1} of {len(st.session_state.questions)}")
+
+# ---------- Tap hint ----------
+st.info("💡 Tap the card to reveal the answer.")
+
+# ---------- Flashcard ----------
+if st.button(q["question"], key=f"card_{idx}"):
+    reveal_answer()
+
+# ---------- Show answer ----------
+if st.session_state.show_answer:
+    st.markdown(
+        f"""
+        <div class="answerbox">
+        <strong>Answer:</strong><br>{q['answer']}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ---------- Navigation buttons ----------
+col1, col2 = st.columns(2)
 with col1:
-    st.button("Previous Question", on_click=previous_question, key=f"prev_{idx}")
+    st.button("⬅️ Previous", key=f"prev_{idx}", on_click=previous_question, use_container_width=True)
 with col2:
-    st.button("Show Answer", on_click=show_answer, key=f"show_{idx}")
-with col3:
-    st.button("Next Question", on_click=next_question, key=f"next_{idx}")
+    st.button("Next ➡️", key=f"next_{idx}", on_click=next_question, use_container_width=True)
+
+# ---------- New Quiz ----------
+st.divider()
+st.button("🔄 New Quiz", on_click=new_quiz)

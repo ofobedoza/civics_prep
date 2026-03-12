@@ -48,12 +48,17 @@ st.markdown("""
 
 .stButton button {
     font-size: 22px;
-    height: 60px;
+    /* allow buttons to size to their content instead of forcing a fixed height */
+    height: auto;
+    min-height: 60px;
+    padding: 25px;
     border-radius: 16px;
     border: 1px solid #adb5bd;
     background-color: var(--secondary-background-color);
     width: 100%;
     box-sizing: border-box;
+    white-space: normal;             /* enable line wrapping */
+    word-wrap: break-word;          /* break long lines if needed */
 }
 
 /* remove custom width hacks; container constrains everything */
@@ -170,8 +175,6 @@ with col2:
     st.button("Next ➡️", key=f"next_{idx}", on_click=next_question, use_container_width=True)
 
 # ---------- New Quiz ----------
-st.divider()
-# center the new quiz button by placing it in the middle column
 col_left, col_mid, col_right = st.columns([1,2,1])
 with col_mid:
     st.button("🔄 New Quiz", on_click=new_quiz, use_container_width=True)

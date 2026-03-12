@@ -11,6 +11,10 @@ st.markdown("""
 .block-container {
     padding-top: 1.5rem;
     padding-bottom: 2rem;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .flashcard {
@@ -24,9 +28,9 @@ st.markdown("""
     user-select: none;
     cursor: pointer;
     min-height: 160px;
-    display: flex;
     align-items: center;
     justify-content: center;
+    display: flex;
     width: 100%;
     max-width: 600px;
 }
@@ -37,6 +41,7 @@ st.markdown("""
     border-radius: 16px;
     border: 1px solid #dee2e6;
     font-size: 20px;
+    text-align: center;
     margin: 0 0 1rem 0;
     color: var(--text-color);
 }
@@ -47,17 +52,20 @@ st.markdown("""
     border-radius: 16px;
     border: 1px solid #adb5bd;
     background-color: var(--secondary-background-color);
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* fix width only for the flashcard button itself by selecting the
-   first stButton container directly under the page block.  navigation
-   buttons live inside column divs and thus aren't matched. */
-.block-container > .stButton:first-of-type button {
+/* remove custom width hacks; container constrains everything */
+
+/* center the final "New Quiz" button (it's the last stButton) */
+.stButton:last-of-type button {
     display: block;
-    width: 600px;
+    margin: 1rem auto;
+    width: 100%;
     max-width: 600px;
-    margin: 0 auto;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -119,7 +127,10 @@ if st.session_state.quiz_setup:
         [10, 20, 30, 50, 100],
         key="num_questions"
     )
-    st.button("Start Quiz", on_click=start_quiz)
+    # center the start button using three columns
+    col_l, col_m, col_r = st.columns([1,2,1])
+    with col_m:
+        st.button("▶️ Start Quiz", on_click=start_quiz, use_container_width=True)
     st.stop()
 
 # ---------- Current question ----------
@@ -135,7 +146,9 @@ st.caption(f"Question {idx + 1} of {len(st.session_state.questions)}")
 st.info("💡 Tap the question to reveal the answer.")
 
 # ---------- Flashcard ----------
-if st.button(q["question"], key=f"card_{idx}"):
+# use_container_width ensures the button spans the parent container's width
+# which we constrain to 600px via CSS on .block-container.
+if st.button(q["question"], key=f"card_{idx}", use_container_width=True):
     reveal_answer()
 
 # ---------- Show answer ----------
@@ -158,4 +171,7 @@ with col2:
 
 # ---------- New Quiz ----------
 st.divider()
-st.button("🔄 New Quiz", on_click=new_quiz)
+# center the new quiz button by placing it in the middle column
+col_left, col_mid, col_right = st.columns([1,2,1])
+with col_mid:
+    st.button("🔄 New Quiz", on_click=new_quiz, use_container_width=True)

@@ -14,10 +14,10 @@ st.markdown("""
 }
 
 .flashcard {
-    background-color: #f8f9fa;
+    background-color: var(--secondary-background-color);
     padding: 25px;
-    border-radius: 16px 16px 0 0;
-    border: 1px solid #ddd;
+    border-radius: 16px;
+    border: 1px solid #adb5bd;
     font-size: 22px;
     line-height: 1.5;
     text-align: center;
@@ -27,22 +27,36 @@ st.markdown("""
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    max-width: 600px;
 }
 
 .answerbox {
-    background-color: #fff2b3;
+    background-color: var(--secondary-background-color);
     padding: 20px;
-    border-radius: 0 0 16px 16px;
-    border: 1px solid #ffd966;
+    border-radius: 16px;
+    border: 1px solid #dee2e6;
     font-size: 20px;
-    margin-top: 0;
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
 }
 
 .stButton button {
     font-size: 22px;
     height: 60px;
-    border-radius: 0 0 16px 16px;
-    border-top: none;
+    border-radius: 16px;
+    border: 1px solid #adb5bd;
+    background-color: var(--secondary-background-color);
+}
+
+/* fix width only for the flashcard button itself by selecting the
+   first stButton container directly under the page block.  navigation
+   buttons live inside column divs and thus aren't matched. */
+.block-container > .stButton:first-of-type button {
+    display: block;
+    width: 600px;
+    max-width: 600px;
+    margin: 0 auto;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -118,7 +132,7 @@ st.progress(progress)
 st.caption(f"Question {idx + 1} of {len(st.session_state.questions)}")
 
 # ---------- Tap hint ----------
-st.info("💡 Tap the card to reveal the answer.")
+st.info("💡 Tap the question to reveal the answer.")
 
 # ---------- Flashcard ----------
 if st.button(q["question"], key=f"card_{idx}"):

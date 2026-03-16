@@ -99,7 +99,10 @@ if "quiz_setup" not in st.session_state:
 # ---------- Functions ----------
 def start_quiz():
     num_q = st.session_state.get("num_questions", 20)
-    n = min(num_q, len(CIVIC_QUESTIONS))
+    if num_q == "All":
+        n = len(CIVIC_QUESTIONS)
+    else:
+        n = min(num_q, len(CIVIC_QUESTIONS))
     st.session_state.questions = random.sample(CIVIC_QUESTIONS, n)
     st.session_state.current_index = 0
     st.session_state.show_answer = False
@@ -129,7 +132,7 @@ if st.session_state.quiz_setup:
     st.subheader("Start a New Quiz")
     st.selectbox(
         "Number of questions",
-        [10, 20, 30, 50, 100],
+        [10, 20, 30, 50, 100, "All"],
         key="num_questions"
     )
     # center the start button using three columns
